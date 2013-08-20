@@ -1,7 +1,35 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>WebGL Material Viewer Demo</title>
+		
+		<!-- Various Libraries -->
+		<script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
+		<script type="text/javascript" src="js/three.min.js"></script>
+		<script type="text/javascript" src="js/teapot.js"></script>
+
+		<!-- Main JavaScript -->
+		<script type="text/javascript" src="js/main.js">
+
+		</script>
+
+		<!-- Kill JavaScript box if JavaScript is present. -->
+		<script type="text/javascript">
+		$(document).ready(function ()
+		{
+			$("body div.no-javascript").remove();
+			setupShaderDemoArea($("#target"), 0xDDDDDD);
+		});
+		</script>
 	</head>
 	<body>
+		<div class="no-javascript">
+			<p>
+				Sorry, you have JavaScript disabled and cannot view this content.
+			</p>
+		</div>
+		<div id="target">
+
+		</div>
 	</body>
 </html>
