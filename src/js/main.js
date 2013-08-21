@@ -32,10 +32,15 @@ window.requestAnimFrame = (function(){
 
 function LoadResource(url, cb)
 {
-	$.get(url, cb);
+	$.ajax({
+		url: url, 
+		dataType: "text",
+		cache: false, /* helps immensely during testing. */
+		success: cb
+	});
 }
 
-function DefaultDemo(fs_url, vs_url)
+function DefaultDemo(vs_url, fs_url)
 {
 	this.fs_url = fs_url == undefined? null : fs_url;
 	this.vs_url = vs_url == undefined? null : vs_url;
@@ -66,10 +71,10 @@ DefaultDemo.prototype =
 					+ "}");
 			}
 			else
-				LoadResource(this.fs_url, fs_cb);
+				LoadResource(me.fs_url, fs_cb);
 		};
 
-		if (this.vs_url == null)
+		if (me.vs_url == null)
 		{
 			vs_cb(
 				  "varying vec3 N;"
@@ -77,7 +82,7 @@ DefaultDemo.prototype =
 				+ "void main() { gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); p = gl_Position.xyz; N = normalize((normalMatrix * normal)).xyz;}");
 		}
 		else
-			LoadResource(this.vs_url, vs_cb);
+			LoadResource(me.vs_url, vs_cb);
 	},
 
 	setup: function DefaultDemo_setup(renderer, scene)
@@ -162,7 +167,6 @@ function setupShaderDemoArea(canvas, bg, demo) {
 	canvas.append(renderer.domElement);
 
 	var scene = new THREE.Scene();
-	var demo = null;
 
 	if (demo == undefined)
 	{
