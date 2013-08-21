@@ -114,7 +114,7 @@ DefaultDemo.prototype =
 		var light = new THREE.PointLight(0xFFFFFF);
 		light.position.y = -20;
 		light.position.x = -20;
-		light.position.z = 20;
+		light.position.z = -20;
 		scene.add(light);
 
 		shader.uniforms.light_pos.value = light.position;
