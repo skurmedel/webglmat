@@ -109,6 +109,10 @@ DefaultDemo.prototype =
 		sphere = new THREE.Mesh(
 			new THREE.SphereGeometry(2, 32, 20), 
 			shader);
+		sphere.geometry.computeFaceNormals();
+		sphere.geometry.computeVertexNormals();
+		sphere.normalsNeedUpdate = true;
+		sphere.buffersNeedUpdate = true;
 		scene.add(sphere);
 
 		var light = new THREE.PointLight(0xFFFFFF);
@@ -118,11 +122,19 @@ DefaultDemo.prototype =
 		scene.add(light);
 
 		shader.uniforms.light_pos.value = light.position;
+
+		this.y_angle = 0.0;
 	},
 
 	onRender: function DefaultDemo_onRender(renderer, scene, ms)
 	{
 		var delta = ms / 1000.0;
+
+		this.y_angle += delta * (3.1417 / 4.0);
+		this.y_angle = this.y_angle % 6.28;
+		this.camera.position.z = Math.sin(this.y_angle) * 20;
+		this.camera.position.x = Math.cos(this.y_angle) * 20;
+		this.camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
 		
 		this.camera.updateProjectionMatrix();
 
