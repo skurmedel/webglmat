@@ -15,6 +15,8 @@ void main()
 	vec3 Lp = (viewMatrix * vec4(light_pos, 1.0)).xyz;
 	vec3 L = normalize(p - Lp);
 	vec3 H = normalize(L + V);
+	// The normalized-normal, interpolated normals
+	// might not be unit vectors.
 	vec3 Nn = normalize(N);
 	
 	vec3 diffuse = dot(Nn, L) * vec3(0.4, 0.1, 1.0);
