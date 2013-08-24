@@ -39,7 +39,7 @@ float compute_spec(float Krn, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
 	float D = gauss * exp(-(a * a) / (roughness * roughness));
 	float F = schlick(Krn, VdotH);
 
-	return ((F * D * G) / (3.1417 * NdotV)) / 3.1417;
+	return ((F * D * G) / (3.1417 * VdotH)) / 3.1417;
 }
 
 vec3 compute_diffuse(vec3 Nn, vec3 L)
