@@ -20,6 +20,16 @@ float schlick_ior(float ior1, float ior2, float HdotV)
 	return schlick(F0, HdotV);
 }
 
+float TrowbridgeReitz(float a, float NdotH)
+{
+		float a2 = a * a;
+		float pi = 3.1417;
+		float denominator2 = ((NdotH * NdotH) * (a2 - 1.0) + 1.0);
+		float denominator  = pi * (denominator2 * denominator2);
+		
+		return a2 / denominator;
+}
+
 float compute_spec(float ior, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
 {
 	/*
@@ -29,10 +39,10 @@ float compute_spec(float ior, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
 		G = geometric attenuation.
 		F = fresnel coefficient.
 	*/
-	float NdotH = dot(N, H);
-	float NdotV = dot(N, V);
-	float VdotH = dot(V, H);
-	float NdotL = dot(N, L);
+	float NdotH = max(0.0, dot(N, H));
+	float NdotV = max(0.0, dot(N, V));
+	float VdotH = max(0.0, dot(V, H));
+	float NdotL = max(0.0, dot(N, L));
 
 	float gauss = 100.0;
 
@@ -43,6 +53,7 @@ float compute_spec(float ior, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
 			(2.0 * NdotH * NdotL) / VdotH));
 	float a = acos(NdotH);
 	float D = gauss * exp(-(a * a) / (roughness * roughness));
+	//float D = TrowbridgeReitz(roughness, NdotH);
 	float F = schlick_ior(ior, 1.0, VdotH);
 
 	return ((F * D * G) / (3.1417 * VdotH)) / 3.1417;
@@ -63,8 +74,8 @@ void main()
 	// might not be unit vectors.
 	vec3 Nn = normalize(N);
 	
-	float ior = 1.2;
-	float roughness = 0.4;
+	float ior = 1.1;
+	float roughness = 0.5;
 
 	vec3 diffuse = compute_diffuse(Nn, L) * vec3(0.4, 0.1, 1.0);
 	vec3 spec    = compute_spec(ior, roughness, H, L, Nn, V) * vec3(1.0);
