@@ -14,7 +14,13 @@ float schlick(float F0, float HdotV)
 	return F0 + (1.0 - F0) * pow((1.0 - HdotV), 5.0);
 }
 
-float compute_spec(float Krn, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
+float schlick_ior(float ior1, float ior2, float HdotV)
+{
+	float F0 = (ior1 - ior2) / (ior1 + ior2);
+	return schlick(F0, HdotV);
+}
+
+float compute_spec(float ior, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
 {
 	/*
 		Cook-Torrance Microfacet model.
@@ -37,7 +43,7 @@ float compute_spec(float Krn, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
 			(2.0 * NdotH * NdotL) / VdotH));
 	float a = acos(NdotH);
 	float D = gauss * exp(-(a * a) / (roughness * roughness));
-	float F = schlick(Krn, VdotH);
+	float F = schlick_ior(ior, 1.0, VdotH);
 
 	return ((F * D * G) / (3.1417 * VdotH)) / 3.1417;
 }
@@ -57,11 +63,11 @@ void main()
 	// might not be unit vectors.
 	vec3 Nn = normalize(N);
 	
-	float Krn = 0.1;
-	float roughness = 0.2;
+	float ior = 1.2;
+	float roughness = 0.4;
 
 	vec3 diffuse = compute_diffuse(Nn, L) * vec3(0.4, 0.1, 1.0);
-	vec3 spec    = compute_spec(Krn, roughness, H, L, Nn, V) * vec3(1.0);
+	vec3 spec    = compute_spec(ior, roughness, H, L, Nn, V) * vec3(1.0);
 
 	gl_FragColor = vec4(diffuse + spec, 1.0);
 }
