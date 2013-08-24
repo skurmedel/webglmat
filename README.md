@@ -6,6 +6,16 @@ A simple material demo for WebGL. Features a viewport and a JavaScript UI to twe
 Current status
 --------------
 
-Check out main.js in src/js/.
+Check out `main.js` in `src/js/`.
 
-The shaders are in src/shaders/. For now only simple Blinn-Phongs exist. There will be an Image Based Lighting-example there soon.
+The shaders are in `src/shaders/`.
+
+Current shaders implemented:
+
+ - Simple Blinn-Phong
+ - Simple Cook-Torrance, this will be the basis for an IBL-metal material.
+
+License
+-------
+
+Check each individual file, the libraries are not mine, but everything else is and is under MIT.
