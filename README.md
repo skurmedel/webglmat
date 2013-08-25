@@ -13,7 +13,21 @@ The shaders are in `src/shaders/`.
 Current shaders implemented:
 
  - Simple Blinn-Phong
- - Simple Cook-Torrance, this will be the basis for an IBL-metal material.
+ - Simple material with microfacet specular, currently it is
+   mostly Cook-Torrance, but will end up with GGX as the distribution
+   term; for pretty specular highlights.
+
+The long term goals is:
+
+ - Simple "dynamic" parameters, controllable through a HTML interface.
+ - A nice looking metal shader that supports image based lighting.
+ - The ability to easily reuse large parts for new demos, a framework
+   for WebGL shader demos.
+
+Can I watch it online?
+----------------------
+
+Head over too http://quaternion.se/demos/ibl/ for reasonably up to date version.
 
 License
 -------
