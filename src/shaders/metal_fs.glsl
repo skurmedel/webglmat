@@ -1,6 +1,8 @@
 varying vec3 N;
 varying vec3 p;
 
+uniform float roughness;
+uniform float ior;
 uniform vec3 light_pos;
 
 /*
@@ -17,7 +19,7 @@ float schlick(float F0, float HdotV)
 float schlick_ior(float ior1, float ior2, float HdotV)
 {
 	float F0 = (ior1 - ior2) / (ior1 + ior2);
-	return schlick(F0, HdotV);
+	return schlick(F0 * F0, HdotV);
 }
 
 float TrowbridgeReitz(float a, float NdotH)
@@ -51,7 +53,7 @@ float compute_spec(float ior, float roughness, vec3 H, vec3 L, vec3 N, vec3 V, f
 	float VdotH = max(0.0, dot(V, H));
 	float NdotL = max(0.0, dot(N, L));
 
-	float gauss = 6.0;
+	float gauss = 9.0;
 
 	float G = min(
 		1.0, 
@@ -89,9 +91,7 @@ void main()
 	// might not be unit vectors.
 	vec3 Nn = normalize(N);
 	
-	float ior = 1.4;
-	float roughness = 0.2;	
-	float F = schlick_ior(ior, 1.0, max(0.0, dot(V, H)));
+	float F = schlick_ior(1.0, ior, max(0.0, dot(V, H)));
 
 	vec3 diffuse = compute_diffuse(Nn, L, F) * vec3(1.0, 1.0, 1.0);
 	vec3 spec    = compute_spec(ior, roughness, H, L, Nn, V, F) * vec3(1.0);

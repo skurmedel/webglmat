@@ -30,6 +30,7 @@ window.requestAnimFrame = (function(){
           };
 })();
 
+
 /* ----------------------------------------------------------------------------
 	BATCHLOADER CLASS.
    ------------------------------------------------------------------------- */
@@ -100,16 +101,18 @@ BatchLoader.prototype =
 	{
 		this.current();
 	}
-}
+};
 
 /* ----------------------------------------------------------------------------
 	DEFAULT DEMO CLASS.
    ------------------------------------------------------------------------- */
 
-function DefaultDemo(vs_url, fs_url)
+function DefaultDemo(vs_url, fs_url, onSetupComplete)
 {
 	this.fs_url = fs_url == undefined? null : fs_url;
 	this.vs_url = vs_url == undefined? null : vs_url;
+
+	this.onSetupComplete = onSetupComplete === undefined? function() {} : onSetupComplete;
 }
 
 DefaultDemo.prototype =
@@ -190,6 +193,8 @@ DefaultDemo.prototype =
 		shader.uniforms.light_pos.value = light.position;
 
 		this.y_angle = 0.0;
+
+		this.onSetupComplete(this);
 	},
 
 	onRender: function DefaultDemo_onRender(renderer, scene, ms)
@@ -210,18 +215,20 @@ DefaultDemo.prototype =
 
 	createShaders: function DefaultDemo_createShaders()
 	{
-		var material = new THREE.ShaderMaterial(
+		this.material = new THREE.ShaderMaterial(
 			{
 				fragmentShader: this.fs, 
 				vertexShader: this.vs, 
 				uniforms: {
 					"light_pos": { type: 'v3', value: new THREE.Vector3(0.0, 1.0, 0.0) },
+					"roughness": { type: 'f', value: 0.2 },
+					"ior": { type: "f", value: 1.5 }
 				}
 			}
 		);
-		return material;
+		return this.material;
 	}
-}
+};
 
 /*
 	Sets up a WebGL context in some element, loads two shaders
@@ -269,3 +276,117 @@ function setupShaderDemoArea(canvas, bg, demo) {
 	});
 }
 
+/* ----------------------------------------------------------------------------
+	USER INTERFACE MODEL & CONTROLLER.
+   ------------------------------------------------------------------------- */
+
+function FloatProperty(targetObj, name, min, max)
+{
+	this.obj = targetObj;
+	this.name = name;
+	this.range = {};
+	if (min !== undefined)
+		this.range.min = new Number(min);
+	if (max !== undefined)
+		this.range.max = new Number(max);
+
+	this.type = "float";
+}
+
+FloatProperty.prototype =
+{
+	set: function (v)
+	{
+		this.obj[this.name] = v;
+	}
+};
+
+function Vector3Property(targetObj, name)
+{
+	this.obj = targetObj;
+	this.name = name;
+	this.type = "vec3";
+}
+
+Vector3Property.prototype = 
+{
+	set: function (x, y, z)
+	{
+		if (y === undefined)
+		{
+			y = x;
+			z = x;
+		}
+
+		this.obj[this.name].x = x;
+		this.obj[this.name].y = y;
+		this.obj[this.name].z = z;
+	},
+
+	setX: function (v)
+	{
+		this.obj[this.name].x = v;
+	},
+
+	setY: function (v)
+	{
+		this.obj[this.name].y = v;
+	},
+
+	setZ: function (v)
+	{
+		this.obj[this.name].x = v;
+	}
+};
+
+RGBProperty = Vector3Property;
+
+function UniformModel(targetObj)
+{
+	this.targetObj;
+	this.properties = {};
+}
+
+UniformModel.prototype = 
+{
+	createVector3Property: function (name)
+	{
+		this.properties[name] = new Vector3Property(this.targetObj, name);
+	},
+
+	createFloatProperty: function (name)
+	{
+		this.properties[name] = new FloatProperty(this.targetObj, name);
+	},
+
+	createRGBProperty: function (name)
+	{
+		this.properties[name] = new RGBProperty(this.targetObj, name);
+	}
+};
+
+/* ----------------------------------------------------------------------------
+	USER INTERFACE CONTROLS.
+   ------------------------------------------------------------------------- */
+
+function createControl(property)
+{
+	var t = typeof property;
+	if (t != "object")
+		return null;
+	
+	t = property.type;
+	if (t === "float")
+	{
+		var control = $("<input type='range'/>");
+		control.attr(property.range);
+		control.attr("step", "0.05");
+		control.change(function () { property.set(this.value); });
+
+		return control;		
+	}
+	else
+	{
+		return null;
+	}
+}

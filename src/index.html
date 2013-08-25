@@ -17,8 +17,21 @@
 		<script type="text/javascript">
 		$(document).ready(function ()
 		{
+			var onDemoSetupComplete = function (demo)
+			{
+				var properties = 
+				{
+					roughness: new FloatProperty(demo.material.uniforms.roughness, "value", 0.0, 1.0),
+					ior: new FloatProperty(demo.material.uniforms.ior, "value", 1.0, 3.0)
+				};
+
+				$("body").append(createControl(properties.roughness));
+				$("body").append(createControl(properties.ior));
+			};
+
 			$("body div.no-javascript").remove();
-			setupShaderDemoArea($("#target"), 0xDDDDDD, new DefaultDemo("shaders/blinn_vs.glsl", "shaders/metal_fs.glsl"));
+			var demo = new DefaultDemo("shaders/blinn_vs.glsl", "shaders/metal_fs.glsl", onDemoSetupComplete);
+			setupShaderDemoArea($("#target"), 0xDDDDDD, demo);					
 		});
 		</script>
 	</head>
