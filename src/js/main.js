@@ -30,15 +30,81 @@ window.requestAnimFrame = (function(){
           };
 })();
 
-function LoadResource(url, cb)
+/* ----------------------------------------------------------------------------
+	BATCHLOADER CLASS.
+   ------------------------------------------------------------------------- */
+
+/*
+	This class makes chained loading easier.
+
+	The construct takes a callback, called onSuccess, this callback is called 
+	as the last function in the chain, after all the loads are completed.
+*/
+function BatchLoader(onSuccess)
 {
-	$.ajax({
-		url: url, 
-		dataType: "text",
-		cache: false, /* helps immensely during testing. */
-		success: cb
-	});
+	if (onSuccess === undefined || onSuccess === null)
+	{
+		var e = new Error();
+		e.msg = "Requires a callback."
+		throw e;
+	}
+	this.onSuccess = onSuccess;
+	this.current = null;
 }
+
+BatchLoader.prototype = 
+{
+	/*
+		Adds a loader and a callback to the chain.
+
+		loader is a function and it must in some way make sure onSuccess 
+		is called.
+
+		onSuccess is the callback for when loading is completed,
+		it is passed whatever arguments loader calls it with.
+	*/
+	add: function BatchLoader_add(loader, onSuccess)
+	{
+		var oldCurrent = this.current;
+		if (this.current === null)
+		{
+			oldCurrent = this.onSuccess;
+		}
+
+		var me = this;
+		var cb = function call_success_and_run_next()
+		{
+			onSuccess.apply(me, arguments);
+			oldCurrent();
+		}
+		this.current = function ()
+		{
+			loader(cb);
+		} 
+	},
+
+	addUri: function BatchLoader_addUri(uri, onSuccess, cache)
+	{
+		var cache = cache === undefined? false : cache;
+		this.add(function (cb) {
+			$.ajax({
+				url: uri, 
+				dataType: "text",
+				cache: cache,
+				success: cb
+			});
+		}, onSuccess);
+	},
+
+	run: function BatchLoader_run()
+	{
+		this.current();
+	}
+}
+
+/* ----------------------------------------------------------------------------
+	DEFAULT DEMO CLASS.
+   ------------------------------------------------------------------------- */
 
 function DefaultDemo(vs_url, fs_url)
 {
@@ -53,10 +119,20 @@ DefaultDemo.prototype =
 		var me = this;
 		var fs_cb = function(data) 
 		{
-			me.fs = data;
-			
-			var jsonLoader = new THREE.JSONLoader();
-			jsonLoader.load("assets/teapot_tri_4k.js", function (geo)
+			me.fs = data;			
+		};
+		var vs_cb = function(data) 
+		{
+			me.vs = data;
+		};
+
+		var bl = new BatchLoader(cb);
+		bl.add(
+			function (onSuccess) {
+				var jsonLoader = new THREE.JSONLoader();
+				jsonLoader.load("assets/teapot_tri_4k.js", onSuccess);
+			},
+			function (geo)
 			{
 				me.teapot_geo = geo;
 				me.teapot_geo.computeBoundingSphere();
@@ -68,37 +144,11 @@ DefaultDemo.prototype =
 				tm.makeTranslation(0.0, -2.5, 0.0);
 
 				me.teapot_geo.applyMatrix(tm.multiply(sm));
-
-				cb();
 			});
-		};
-		var vs_cb = function(data) 
-		{
-			me.vs = data; 
-			if (me.fs_url == null)
-			{
-				fs_cb(
-					  "varying vec3 N;"
-					+ "varying vec3 p;"
-					+ "uniform vec3 light_pos;"
-					+ "void main() {"
-					+ "  vec3 L = normalize(p - (viewMatrix * vec4(light_pos, 1.0)).xyz);"
-					+ "  gl_FragColor = vec4(dot(N, L) * vec3(1.0, 0.0, 0.0), 1.0);"
-					+ "}");
-			}
-			else
-				LoadResource(me.fs_url, fs_cb);
-		};
+		bl.addUri(me.fs_url, fs_cb);
+		bl.addUri(me.vs_url, vs_cb);
 
-		if (me.vs_url == null)
-		{
-			vs_cb(
-				  "varying vec3 N;"
-				+ "varying vec3 p;"
-				+ "void main() { gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); p = gl_Position.xyz; N = normalize((normalMatrix * normal)).xyz;}");
-		}
-		else
-			LoadResource(me.vs_url, vs_cb);
+		bl.run();
 	},
 
 	setup: function DefaultDemo_setup(renderer, scene)
