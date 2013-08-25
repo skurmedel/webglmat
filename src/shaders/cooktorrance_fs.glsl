@@ -30,7 +30,14 @@ float TrowbridgeReitz(float a, float NdotH)
 		return a2 / denominator;
 }
 
-float compute_spec(float ior, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
+float DGGXTrowbridgeReitz(float roughness, float NdotH)
+{
+	float a2 = roughness * roughness;
+	float deno = 3.1417 * pow((NdotH * NdotH) * (a2 - 1.0) + 1.0, 2.0);
+	return a2 / deno;
+}
+
+float compute_spec(float ior, float roughness, vec3 H, vec3 L, vec3 N, vec3 V, float F)
 {
 	/*
 		Cook-Torrance Microfacet model.
@@ -44,7 +51,7 @@ float compute_spec(float ior, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
 	float VdotH = max(0.0, dot(V, H));
 	float NdotL = max(0.0, dot(N, L));
 
-	float gauss = 100.0;
+	float gauss = 6.0;
 
 	float G = min(
 		1.0, 
@@ -53,15 +60,23 @@ float compute_spec(float ior, float roughness, vec3 H, vec3 L, vec3 N, vec3 V)
 			(2.0 * NdotH * NdotL) / VdotH));
 	float a = acos(NdotH);
 	float D = gauss * exp(-(a * a) / (roughness * roughness));
-	//float D = TrowbridgeReitz(roughness, NdotH);
-	float F = schlick_ior(ior, 1.0, VdotH);
+	// D = DGGXTrowbridgeReitz(roughness, NdotH);
 
-	return ((F * D * G) / (3.1417 * VdotH)) / 3.1417;
+	return (F * D * G) / (4.0 * NdotL * NdotV);
 }
 
-vec3 compute_diffuse(vec3 Nn, vec3 L)
+/*
+	Computes the diffuse term.
+
+	All vectors must be unit vectors.
+
+	Nn 	surface normal.
+	L 	incident light vector.
+	F 	fresnel coefficient.
+*/
+vec3 compute_diffuse(vec3 Nn, vec3 L, float F)
 {
-	return vec3(dot(Nn, L));
+	return (1.0 - F) * vec3(dot(Nn, L));
 }
 
 void main() 
@@ -74,11 +89,12 @@ void main()
 	// might not be unit vectors.
 	vec3 Nn = normalize(N);
 	
-	float ior = 1.1;
-	float roughness = 0.5;
+	float ior = 1.4;
+	float roughness = 0.2;	
+	float F = schlick_ior(ior, 1.0, max(0.0, dot(V, H)));
 
-	vec3 diffuse = compute_diffuse(Nn, L) * vec3(0.4, 0.1, 1.0);
-	vec3 spec    = compute_spec(ior, roughness, H, L, Nn, V) * vec3(1.0);
+	vec3 diffuse = compute_diffuse(Nn, L, F) * vec3(1.0, 1.0, 1.0);
+	vec3 spec    = compute_spec(ior, roughness, H, L, Nn, V, F) * vec3(1.0);
 
 	gl_FragColor = vec4(diffuse + spec, 1.0);
 }

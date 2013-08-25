@@ -54,7 +54,23 @@ DefaultDemo.prototype =
 		var fs_cb = function(data) 
 		{
 			me.fs = data;
-			cb();
+			
+			var jsonLoader = new THREE.JSONLoader();
+			jsonLoader.load("assets/teapot_tri_4k.js", function (geo)
+			{
+				me.teapot_geo = geo;
+				me.teapot_geo.computeBoundingSphere();
+				me.teapot_geo.computeTangents();
+				
+				var sm = new THREE.Matrix4();
+				sm.makeScale(50, 50, 50);
+				var tm = new THREE.Matrix4();
+				tm.makeTranslation(0.0, -2.5, 0.0);
+
+				me.teapot_geo.applyMatrix(tm.multiply(sm));
+
+				cb();
+			});
 		};
 		var vs_cb = function(data) 
 		{
@@ -106,14 +122,14 @@ DefaultDemo.prototype =
 		this.camera.position.z = 20;
 
 		var shader = this.createShaders();
-		sphere = new THREE.Mesh(
-			new THREE.SphereGeometry(2, 32, 20), 
+		this.mesh = new THREE.Mesh(
+			this.teapot_geo, 
 			shader);
-		sphere.geometry.computeFaceNormals();
-		sphere.geometry.computeVertexNormals();
-		sphere.normalsNeedUpdate = true;
-		sphere.buffersNeedUpdate = true;
-		scene.add(sphere);
+		this.mesh.geometry.computeFaceNormals();
+		this.mesh.geometry.computeVertexNormals();
+		this.mesh.normalsNeedUpdate = true;
+		this.mesh.buffersNeedUpdate = true;
+		scene.add(this.mesh);
 
 		var light = new THREE.PointLight(0xFFFFFF);
 		light.position.y = -20;
@@ -132,12 +148,13 @@ DefaultDemo.prototype =
 
 		this.y_angle += delta * (3.1417 / 4.0);
 		this.y_angle = this.y_angle % 6.28;
-		this.camera.position.z = Math.sin(this.y_angle) * 20;
-		this.camera.position.x = Math.cos(this.y_angle) * 20;
-		this.camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
+		//this.camera.position.z = Math.sin(this.y_angle) * 20;
+		//this.camera.position.x = Math.cos(this.y_angle) * 20;
+		//this.camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
 		
-		this.camera.updateProjectionMatrix();
-
+		//this.camera.updateProjectionMatrix();
+		this.mesh.rotation.y = this.y_angle;
+		this.mesh.rotation.z = 0.3;
 		renderer.render(scene, this.camera);
 	},
 
