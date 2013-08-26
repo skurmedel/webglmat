@@ -2,7 +2,12 @@
 <html>
 	<head>
 		<title>WebGL Material Viewer Demo</title>
+
+		<link rel="stylesheet" type="text/css" href="css/main.css" />
 		
+		<!-- Fonts -->
+		<script src="//use.edgefonts.net/source-sans-pro;droid-serif.js"></script>
+
 		<!-- Various Libraries -->
 		<script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
 		<script type="text/javascript" src="js/three.min.js"></script>
@@ -15,34 +20,69 @@
 
 		<!-- Kill JavaScript box if JavaScript is present. -->
 		<script type="text/javascript">
+		function createControls(properties)
+		{
+			function setupControl(property)
+			{
+				var c = $("<div class='control-container' />");
+				var label = $("<label />").text(property.description.label);
+				c.append(label);
+
+				var description = $("<p class='description' />").text(property.description.text);
+				c.append(description);
+
+				var control = createControl(property);
+				control.addClass("control");
+
+				var controlWrapper = $("<span class='wrapper' />");
+				controlWrapper.append(control);
+				
+				c.append(controlWrapper);
+
+				return c;
+			}
+
+			$("div#controls").append(setupControl(properties.roughness));
+			$("div#controls").append(setupControl(properties.ior));
+		}
+
 		$(document).ready(function ()
 		{
 			var onDemoSetupComplete = function (demo)
 			{
 				var properties = 
 				{
-					roughness: new FloatProperty(demo.material.uniforms.roughness, "value", 0.0, 1.0),
-					ior: new FloatProperty(demo.material.uniforms.ior, "value", 1.0, 3.0)
+					roughness: new FloatProperty(demo.material.uniforms.roughness, "value", 0.0, 1.0, {label: "Roughness", text: "The smoothness of the surface. It directly affects the size of the specular highlight."}),
+					ior: new FloatProperty(demo.material.uniforms.ior, "value", 1.0, 3.0, {label: "Index of refraction", text: "The index of refraction changes how the surface reflects and refracts light. A high index of refraction makes for a shinier surface; it is related to the fresnel effect. A value of 1.5 is typical for glass; water is 1.3."})
 				};
 
-				$("body").append(createControl(properties.roughness));
-				$("body").append(createControl(properties.ior));
+				createControls(properties);
 			};
 
 			$("body div.no-javascript").remove();
 			var demo = new DefaultDemo("shaders/blinn_vs.glsl", "shaders/metal_fs.glsl", onDemoSetupComplete);
-			setupShaderDemoArea($("#target"), 0xDDDDDD, demo);					
+			setupShaderDemoArea($("#webgl-target"), 0xDDDDDD, demo);					
 		});
 		</script>
 	</head>
 	<body>
-		<div class="no-javascript">
-			<p>
-				Sorry, you have JavaScript disabled and cannot view this content.
-			</p>
-		</div>
-		<div id="target">
+		<div class="root">
+			<h1>Material Editor</h1>
+			<h2>Alter the material properties through the controls under the viewport.</h2>
 
+			<div class="no-javascript">
+				<p>
+					Sorry, you have JavaScript disabled and cannot view this content.
+				</p>
+			</div>
+			<div id="webgl-target" class="demo-area">
+
+			</div>
+
+			<h2>Properties</h2>
+			<div id="controls">
+				
+			</div>
 		</div>
 	</body>
 </html>

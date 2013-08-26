@@ -1,0 +1,94 @@
+/*-----------------------------------------------------------------------------
+	WEBGL DEMO PAGE CSS.
+-----------------------------------------------------------------------------*/
+
+/*
+	Set everything to sane base values.
+*/
+@import url("reset.css");
+
+/*-----------------------------------------------------------------------------
+	MAIN LAYOUT STYLINGS.
+-----------------------------------------------------------------------------*/
+
+body
+{
+	background-color: #F7F7F7;
+}
+
+div.root
+{
+	width: 700px;
+	margin: 2% auto 0 auto;
+}
+
+/*-----------------------------------------------------------------------------
+	TEXT AND PARAGRAPHS.
+-----------------------------------------------------------------------------*/
+
+body
+{
+	font-size: 14px;
+	font-family: droid-serif, serif;
+}
+
+h1, h2, h3, h4, h5
+{
+	font-family: source-sans-pro, sans-serif;
+}
+
+h1 { font-size: 350%; }
+h2 { font-size: 200%; }
+h3 { font-size: 150%; }
+h4 { font-size: 125%; }
+h5 
+{ 
+	font-size: 125%; 
+	font-weight: bold; 
+}
+
+h2, h3, h4, h5
+{
+	margin: 4% 0 0 0;
+}
+
+p
+{
+	margin: 2%;
+	text-align: justify;
+	color: #444;
+	line-height: 135%;
+}
+
+.demo-area
+{
+	margin: 5%;
+}
+
+/*-----------------------------------------------------------------------------
+	CSS CONTROLS.
+-----------------------------------------------------------------------------*/
+
+.control-container
+{
+	margin: 2%;
+	padding: 2%;
+	border: 1px solid #DDD;
+	border-radius: 10px;
+
+	box-shadow: inset 0 0 15px 5px #EDEDED;
+}
+
+.control-container .wrapper
+{
+	
+}
+
+.control-container .wrapper .control 
+{
+
+}
+
+/*-----------------------------------------------------------------------------
+	BITS AND BOBS.
+-----------------------------------------------------------------------------*/

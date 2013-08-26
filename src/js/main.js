@@ -280,7 +280,7 @@ function setupShaderDemoArea(canvas, bg, demo) {
 	USER INTERFACE MODEL & CONTROLLER.
    ------------------------------------------------------------------------- */
 
-function FloatProperty(targetObj, name, min, max)
+function FloatProperty(targetObj, name, min, max, description)
 {
 	this.obj = targetObj;
 	this.name = name;
@@ -291,6 +291,8 @@ function FloatProperty(targetObj, name, min, max)
 		this.range.max = new Number(max);
 
 	this.type = "float";
+
+	this.description = description;
 }
 
 FloatProperty.prototype =
@@ -301,11 +303,13 @@ FloatProperty.prototype =
 	}
 };
 
-function Vector3Property(targetObj, name)
+function Vector3Property(targetObj, name, description)
 {
 	this.obj = targetObj;
 	this.name = name;
 	this.type = "vec3";
+
+	this.description = description;
 }
 
 Vector3Property.prototype = 
