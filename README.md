@@ -17,7 +17,7 @@ Current shaders implemented:
    mostly Cook-Torrance, but will end up with GGX as the distribution
    term; for pretty specular highlights.
 
-The long term goals is:
+The long term goals are:
 
  - Simple "dynamic" parameters, controllable through a HTML interface.
  - A nice looking metal shader that supports image based lighting.
@@ -27,7 +27,7 @@ The long term goals is:
 Can I watch it online?
 ----------------------
 
-Head over too http://quaternion.se/demos/ibl/ for reasonably up to date version.
+Head over too http://quaternion.se/demos/ibl/ for a reasonably up to date version.
 
 License
 -------
@@ -36,4 +36,4 @@ Check each individual file, the libraries (Three.js, jQuery etc) are not made by
 
 The teapot model I don't really know. The original Utah teapot dataset is kind of public domain.
 
-Everything signed by me is under MIT for this project.
+Everything signed by me is under the MIT license for this project.
