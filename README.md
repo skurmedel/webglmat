@@ -32,4 +32,8 @@ Head over too http://quaternion.se/demos/ibl/ for reasonably up to date version.
 License
 -------
 
-Check each individual file, the libraries are not mine, but everything else is and is under MIT.
+Check each individual file, the libraries (Three.js, jQuery etc) are not made by me, but are generally available with a very liberal license. Some of the cubemaps comes from humus.name and are under CC 3.0 Attribution.
+
+The teapot model I don't really know. The original Utah teapot dataset is kind of public domain.
+
+Everything signed by me is under MIT for this project.
