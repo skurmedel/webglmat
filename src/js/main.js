@@ -148,6 +148,24 @@ DefaultDemo.prototype =
 
 				me.teapot_geo.applyMatrix(tm.multiply(sm));
 			});
+		bl.add(
+			function (onSuccess) {
+				var prefix = "assets/basilica/";
+				THREE.ImageUtils.loadTextureCube([
+						prefix + "posx.jpg",
+						prefix + "negx.jpg",
+						prefix + "posy.jpg",
+						prefix + "negy.jpg",
+						prefix + "posz.jpg",
+						prefix + "negz.jpg"
+					],
+					THREE.CubeReflectionMapping,
+					onSuccess);
+			},
+			function (tex) {
+				me.environmentmap = tex;
+				me.environmentmap.mapping = THREE.CubeReflectionMapping;
+			});
 		bl.addUri(me.fs_url, fs_cb);
 		bl.addUri(me.vs_url, vs_cb);
 
@@ -220,6 +238,7 @@ DefaultDemo.prototype =
 				fragmentShader: this.fs, 
 				vertexShader: this.vs, 
 				uniforms: {
+					"env": { type: 't', value: this.environmentmap },
 					"light_pos": { type: 'v3', value: new THREE.Vector3(0.0, 1.0, 0.0) },
 					"roughness": { type: 'f', value: 0.2 },
 					"ior": { type: "f", value: 1.5 }

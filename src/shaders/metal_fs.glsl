@@ -1,6 +1,7 @@
 varying vec3 N;
 varying vec3 p;
 
+uniform samplerCube env;
 uniform float roughness;
 uniform float ior;
 uniform vec3 light_pos;
@@ -90,11 +91,15 @@ void main()
 	// The normalized-normal, interpolated normals
 	// might not be unit vectors.
 	vec3 Nn = normalize(N);
+
+	vec3 R = reflect(L, Nn);
 	
-	float F = schlick_ior(1.0, ior, max(0.0, dot(V, H)));
+	float F = schlick_ior(1.0, ior, dot((L + -V), -V));
+
+	vec3 refl = F * textureCube(env, R).xyz * 2.0;
 
 	vec3 diffuse = compute_diffuse(Nn, L, F) * vec3(1.0, 1.0, 1.0);
 	vec3 spec    = compute_spec(ior, roughness, H, L, Nn, V, F) * vec3(1.0);
 
-	gl_FragColor = vec4(diffuse + spec, 1.0);
+	gl_FragColor = vec4(diffuse + spec + refl, 1.0);
 }
