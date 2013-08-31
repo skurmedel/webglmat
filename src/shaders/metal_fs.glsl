@@ -92,7 +92,7 @@ void main()
 	// might not be unit vectors.
 	vec3 Nn = normalize(N);
 
-	vec3 R = reflect(L, Nn);
+	vec3 R = normalize(p + reflect(L, Nn));
 	
 	float F = schlick_ior(1.0, ior, dot((L + -V), -V));
 
