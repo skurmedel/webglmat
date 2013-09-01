@@ -44,6 +44,28 @@ float d_gtr2(float roughness, float NdotH)
 	return a2 / deno;
 }
 
+vec3 d_gtr2_sample(float roughness, vec3 x, vec3 y, vec3 n, vec3 v, float r)
+{
+	float ax = roughness;
+	float ay = ax;
+
+	/*
+		Make up some kind of rx and ry.
+	*/
+	float rx = (r + n.x + n.y) / 3.0;
+	float ry = (1.0 - r + n.z + n.x + rx) / (3.0 + rx);
+
+	float term1 = sqrt(ry / (1.0 - ry));
+	vec3  term2 = (ax * cos(2.0 * 3.1415 * rx) * x) + (ay * sin(2.0 * 3.1415 * rx) * y);
+
+	vec3 h = normalize(term1 * term2 + n);
+
+	vec3 L = (2.0 * dot(v, h) * h) - v;
+
+
+	return textureCube(env, normalize(L), roughness * 2.0).xyz;
+}
+
 vec3 compute_specular(float ior, float roughness, directions dir, float F)
 {
 	/*
@@ -59,7 +81,23 @@ vec3 compute_specular(float ior, float roughness, directions dir, float F)
 	float NdotL = max(0.0, dot(dir.N, dir.L));
 
 	vec3 R = normalize(p + reflect(dir.L, dir.N));
-	vec3 refl = F * textureCube(env, R).xyz * 2.0;
+
+	/*
+		Sample environment.
+	*/
+	vec3 x = dir.N.xzy;
+	vec3 y = dir.N.yxz;
+	vec3 refl = d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.1) 
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.9) 
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.5)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.3)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.6)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.23)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.77)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.02)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.14)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.7);
+	     refl = (refl * 0.1) * F * 2.0;
 
 	float G = min(
 		1.0, 
