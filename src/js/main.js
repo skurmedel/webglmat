@@ -133,24 +133,24 @@ DefaultDemo.prototype =
 		bl.add(
 			function (onSuccess) {
 				var jsonLoader = new THREE.JSONLoader();
-				jsonLoader.load("assets/teapot_tri_4k.js", onSuccess);
+				jsonLoader.load("assets/bunny_tri_12k.js", onSuccess);
 			},
 			function (geo)
 			{
-				me.teapot_geo = geo;
-				me.teapot_geo.computeBoundingSphere();
-				me.teapot_geo.computeTangents();
+				me.bunny_geo = geo;
+				me.bunny_geo.computeBoundingSphere();
+				me.bunny_geo.computeTangents();
 				
 				var sm = new THREE.Matrix4();
-				sm.makeScale(50, 50, 50);
+				sm.makeScale(1, 1, 1);
 				var tm = new THREE.Matrix4();
-				tm.makeTranslation(0.0, -2.5, 0.0);
+				tm.makeTranslation(0.0, -4, 0.0);
 
-				me.teapot_geo.applyMatrix(tm.multiply(sm));
+				me.bunny_geo.applyMatrix(tm.multiply(sm));
 			});
 		bl.add(
 			function (onSuccess) {
-				var prefix = "assets/basilica/";
+				var prefix = "assets/tanto/";
 				THREE.ImageUtils.loadTextureCube([
 						prefix + "posx.jpg",
 						prefix + "negx.jpg",
@@ -194,7 +194,7 @@ DefaultDemo.prototype =
 
 		var shader = this.createShaders();
 		this.mesh = new THREE.Mesh(
-			this.teapot_geo, 
+			this.bunny_geo, 
 			shader);
 		this.mesh.geometry.computeFaceNormals();
 		this.mesh.geometry.computeVertexNormals();
@@ -227,7 +227,7 @@ DefaultDemo.prototype =
 		
 		//this.camera.updateProjectionMatrix();
 		this.mesh.rotation.y = this.y_angle;
-		this.mesh.rotation.z = 0.3;
+		
 		renderer.render(scene, this.camera);
 	},
 

@@ -1,10 +1,18 @@
 varying vec3 N;
 varying vec3 p;
+varying vec2 UV;
+varying vec3 TN;
+varying vec3 BTN;
 
 uniform samplerCube env;
 uniform float roughness;
 uniform float ior;
 uniform vec3 light_pos;
+
+const float PI      = 3.141592;
+const float PIOVER2 = PI / 2.0;
+const float PIOVER4 = PI / 4.0;
+const float TAU     = 6.283185;
 
 /*
 	Injected by Three.js
@@ -22,6 +30,9 @@ struct directions
 	vec3 L;
 	vec3 N;
 	vec3 V;
+
+	vec3 TN;
+	vec3 BTN;
 };
 
 float schlick(float F0, float HdotV)
@@ -38,7 +49,7 @@ float schlick_ior(float ior1, float ior2, float HdotV)
 float d_gtr2(float roughness, float NdotH)
 {
 	float a2 = roughness * roughness;
-	float term1 = 3.1417;
+	float term1 = PI;
 	float term2 = (NdotH * NdotH) * (a2 - 1.0) + 1.0;
 	float deno = term1 * (term2 * term2);
 	return a2 / deno;
@@ -56,7 +67,7 @@ vec3 d_gtr2_sample(float roughness, vec3 x, vec3 y, vec3 n, vec3 v, float r)
 	float ry = (1.0 - r + n.z + n.x + rx) / (3.0 + rx);
 
 	float term1 = sqrt(ry / (1.0 - ry));
-	vec3  term2 = (ax * cos(2.0 * 3.1415 * rx) * x) + (ay * sin(2.0 * 3.1415 * rx) * y);
+	vec3  term2 = (ax * cos(2.0 * PI * rx) * x) + (ay * sin(2.0 * PI * rx) * y);
 
 	vec3 h = normalize(term1 * term2 + n);
 
@@ -85,8 +96,8 @@ vec3 compute_specular(float ior, float roughness, directions dir, float F)
 	/*
 		Sample environment.
 	*/
-	vec3 x = dir.N.xzy;
-	vec3 y = dir.N.yxz;
+	vec3 x = dir.TN;
+	vec3 y = dir.BTN;
 	vec3 refl = d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.1) 
 	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.9) 
 	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.5)
@@ -121,6 +132,29 @@ vec3 compute_specular(float ior, float roughness, directions dir, float F)
 */
 vec3 compute_diffuse(directions dir, float F)
 {
+	/*
+	const int n = 2;
+	float theta_s = PIOVER2 / float(n);
+	float phi_s   = TAU / float(n);
+
+	const float weight = 1.0 / (float(n) * float(n));
+	vec3 env_light;
+
+	for (int tn = 0; tn < n; tn++)
+	{
+		for (int pn = 0; pn < n; pn++)
+		{
+			float th = theta_s * float(tn);
+			float ph = phi_s * float(pn);
+			vec3 sample_dir;
+			sample_dir.x = sin(th) * cos(ph);
+			sample_dir.y = sin(th) * sin(ph);
+			sample_dir.z = cos(ph);
+
+			sample_dir = p + sample_dir;
+			env_light += textureCube(env, sample_dir, 4.0).xyz * weight;
+		}
+	}*/
 	return (1.0 - F) * vec3(dot(dir.N, dir.L));
 }
 
@@ -135,6 +169,8 @@ void main()
 	// The normalized-normal, interpolated normals
 	// might not be unit vectors.
 	dir.N = normalize(N);
+	dir.TN = normalize(TN);
+	dir.BTN = normalize(BTN);
 	
 	float F = schlick_ior(1.0, ior, dot((dir.L + -dir.V), -dir.V));
 
