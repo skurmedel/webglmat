@@ -240,8 +240,10 @@ DefaultDemo.prototype =
 				uniforms: {
 					"env": { type: 't', value: this.environmentmap },
 					"light_pos": { type: 'v3', value: new THREE.Vector3(0.0, 1.0, 0.0) },
-					"roughness": { type: 'f', value: 0.2 },
-					"ior": { type: "f", value: 1.5 }
+					"roughness": { type: 'f', value: 0.25 },
+					"ior": { type: "f", value: 2.1 },
+					"baseColor": { type: "v3", value: new THREE.Vector3(0.81, 0.59, 0.475) },
+					"metallic": { type: "f", value: 0.9 }
 				}
 			}
 		);
@@ -319,6 +321,11 @@ FloatProperty.prototype =
 	set: function (v)
 	{
 		this.obj[this.name] = v;
+	},
+
+	get: function()
+	{
+		return this.obj[this.name];
 	}
 };
 
@@ -358,8 +365,10 @@ Vector3Property.prototype =
 
 	setZ: function (v)
 	{
-		this.obj[this.name].x = v;
-	}
+		this.obj[this.name].z = v;
+	},
+
+	get: function () { return this.obj[this.name]; }
 };
 
 RGBProperty = Vector3Property;
@@ -404,9 +413,47 @@ function createControl(property)
 		var control = $("<input type='range'/>");
 		control.attr(property.range);
 		control.attr("step", "0.05");
+		control.attr("value", property.get());
 		control.change(function () { property.set(this.value); });
 
 		return control;		
+	}
+	else if (t == "vec3")
+	{
+		var onChangeX = function () { property.setX(this.value); }
+		var onChangeY = function () { property.setY(this.value); }
+		var onChangeZ = function () { property.setZ(this.value); }
+
+		function cell(inside)
+		{
+			return $("<td />").append(inside);
+		}
+
+		function component(val, change) 
+		{
+			var input = $("<input type=\"number\" step=\"0.01\" />");
+			input.attr("value", val);
+			input.change(change); 
+			return cell(input);
+		}
+
+		var val = property.get();
+
+		var control = $("<table class=\"vector3-control\">");
+		
+		var c1 = component(val.x, onChangeX);
+		var c2 = component(val.y, onChangeY);
+		var c3 = component(val.z, onChangeZ);
+
+		var row = $("<tr />")
+			   .append(cell("X"))
+		       .append(c1)
+		       .append(cell("Y"))
+		       .append(c2)
+		       .append(cell("Z"))
+		       .append(c3);
+
+		return control.append(row);
 	}
 	else
 	{

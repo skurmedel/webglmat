@@ -13,6 +13,6 @@ void main()
 	p = (modelViewMatrix * vec4(position, 1.0)).xyz;
 	N = normalMatrix * normal;
 	TN = normalMatrix * tangent.xyz;
-	BTN = cross(N, TN);
+	BTN = normalize(cross(N, TN));
 	UV = uv;
 }

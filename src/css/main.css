@@ -81,12 +81,30 @@ p
 
 .control-container .wrapper
 {
-	
 }
 
-.control-container .wrapper .control 
+.control-container .wrapper table
 {
+	width: -moz-calc(100% - 2%);
+	width: -webkit-calc(100% - 2%);
+	margin: 0 2%;
+}
 
+.control-container .wrapper table input
+{
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	width: 100%;
+}
+
+.control-container .wrapper input.control 
+{
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	width: -moz-calc(100% - 2%);
+	width: -webkit-calc(100% - 2%);
 }
 
 /*-----------------------------------------------------------------------------

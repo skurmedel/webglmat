@@ -8,6 +8,8 @@ uniform samplerCube env;
 uniform float roughness;
 uniform float ior;
 uniform vec3 light_pos;
+uniform float metallic;
+uniform vec3 baseColor;
 
 const float PI      = 3.141592;
 const float PIOVER2 = PI / 2.0;
@@ -73,7 +75,6 @@ vec3 d_gtr2_sample(float roughness, vec3 x, vec3 y, vec3 n, vec3 v, float r)
 
 	vec3 L = (2.0 * dot(v, h) * h) - v;
 
-
 	return textureCube(env, normalize(L), roughness * 2.0).xyz;
 }
 
@@ -91,24 +92,22 @@ vec3 compute_specular(float ior, float roughness, directions dir, float F)
 	float VdotH = max(0.0, dot(dir.V, dir.H));
 	float NdotL = max(0.0, dot(dir.N, dir.L));
 
-	vec3 R = normalize(p + reflect(dir.L, dir.N));
-
 	/*
 		Sample environment.
 	*/
-	vec3 x = dir.TN;
-	vec3 y = dir.BTN;
-	vec3 refl = d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.1) 
-	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.9) 
-	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.5)
-	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.3)
-	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.6)
-	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.23)
-	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.77)
-	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.02)
-	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.14)
-	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.7);
-	     refl = (refl * 0.1) * F * 2.0;
+	vec3 x = dir.N.zyx;
+	vec3 y = normalize(cross(dir.N.zyx, dir.N));
+	vec3 refl = d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.01) 
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.11) 
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.21)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.31)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.41)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.51)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.61)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.71)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.81)
+	          + d_gtr2_sample(roughness, x, y, dir.N, dir.V, 0.91);
+	     refl = refl * 1.0 * F;
 
 	float G = min(
 		1.0, 
@@ -118,7 +117,7 @@ vec3 compute_specular(float ior, float roughness, directions dir, float F)
 	float a = acos(NdotH);
 	float D = d_gtr2(roughness, NdotH);
 
-	return ((F * D * G) / (4.0 * NdotL * NdotV)) + refl;
+	return ((F * D * G) / (4.0 * NdotL * NdotV)) * vec3(1.0) + refl;
 }
 
 /*
@@ -132,37 +131,14 @@ vec3 compute_specular(float ior, float roughness, directions dir, float F)
 */
 vec3 compute_diffuse(directions dir, float F)
 {
-	/*
-	const int n = 2;
-	float theta_s = PIOVER2 / float(n);
-	float phi_s   = TAU / float(n);
-
-	const float weight = 1.0 / (float(n) * float(n));
-	vec3 env_light;
-
-	for (int tn = 0; tn < n; tn++)
-	{
-		for (int pn = 0; pn < n; pn++)
-		{
-			float th = theta_s * float(tn);
-			float ph = phi_s * float(pn);
-			vec3 sample_dir;
-			sample_dir.x = sin(th) * cos(ph);
-			sample_dir.y = sin(th) * sin(ph);
-			sample_dir.z = cos(ph);
-
-			sample_dir = p + sample_dir;
-			env_light += textureCube(env, sample_dir, 4.0).xyz * weight;
-		}
-	}*/
-	return (1.0 - F) * vec3(dot(dir.N, dir.L));
+	return (1.0 - F) * dot(dir.N, dir.L) * vec3(1.0);
 }
 
 void main() 
 {
 	directions dir;
 
-	dir.V = normalize(viewMatrix * vec4(cameraPosition - p, 1.0)).xyz;
+	dir.V = normalize((viewMatrix * vec4(cameraPosition, 1.0)).xyz - p);
 	vec3 Lp = (viewMatrix * vec4(light_pos, 1.0)).xyz;
 	dir.L = normalize(p - Lp);
 	dir.H = normalize(dir.L + dir.V);
@@ -171,11 +147,11 @@ void main()
 	dir.N = normalize(N);
 	dir.TN = normalize(TN);
 	dir.BTN = normalize(BTN);
-	
-	float F = schlick_ior(1.0, ior, dot((dir.L + -dir.V), -dir.V));
 
-	vec3 diffuse = compute_diffuse(dir, F) * vec3(1.0, 1.0, 1.0);
-	vec3 spec    = compute_specular(ior, roughness, dir, F) * vec3(1.0);
+	float F = schlick_ior(ior, 1.0, dot(normalize(dir.V + dir.L), dir.V));
+
+	vec3 diffuse = compute_diffuse(dir, F) * (baseColor * (1.0 - metallic));
+	vec3 spec    = compute_specular(ior, roughness, dir, F) * mix(vec3(1.0), baseColor, metallic);
 
 	gl_FragColor = vec4(diffuse + spec, 1.0);
 }
