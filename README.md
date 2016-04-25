@@ -27,7 +27,11 @@ The long term goals are:
 Can I watch it online?
 ----------------------
 
-Head over too http://quaternion.se/demos/ibl/ for a reasonably up to date version.
+(not at the moment)
+
+Issues
+------
+Doesn't seem to work in Microsoft Edge. Untested in latest versions of Chrome.
 
 License
 -------
